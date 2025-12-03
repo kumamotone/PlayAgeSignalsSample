@@ -1,4 +1,4 @@
-package dev.kuma.ui.theme
+package dev.kuma.playagesignalssample.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

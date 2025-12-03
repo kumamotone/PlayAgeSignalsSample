@@ -5,13 +5,13 @@ plugins {
 }
 
 android {
-    namespace = "dev.kuma"
+    namespace = "dev.kuma.playagesignalssample"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "dev.kuma"
+        applicationId = "dev.kuma.playagesignalssample"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -50,6 +50,16 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    
+    // Play Age Signals API
+    implementation(libs.play.age.signals)
+    
+    // Coroutines Play Services (for await() on Task)
+    implementation(libs.kotlinx.coroutines.play.services)
+    
+    // ViewModel Compose
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

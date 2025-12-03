@@ -1,4 +1,4 @@
-package dev.kuma
+package dev.kuma.playagesignalssample
 
 import org.junit.Test
 

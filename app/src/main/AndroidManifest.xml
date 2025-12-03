@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PlayAgeSignalsSample">
         <activity
-            android:name=".MainActivity"
+            android:name="dev.kuma.playagesignalssample.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.PlayAgeSignalsSample">
