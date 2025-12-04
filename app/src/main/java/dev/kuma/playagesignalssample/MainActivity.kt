@@ -86,7 +86,7 @@ fun AgeSignalsScreen(
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
         )
-        
+
         Spacer(modifier = Modifier.height(8.dp))
         
         Text(
