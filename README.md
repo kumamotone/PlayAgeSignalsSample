@@ -106,8 +106,9 @@ This sample app includes a **Testing Settings** panel that allows you to simulat
    - **Simulate Error**: Select an error code to test error handling
 
 When testing mode is active:
+
 - A "🧪 Testing Mode Active" indicator appears at the top
-- The "Check Age Signals" button shows "(Fake)" 
+- The "Check Age Signals" button shows "(Fake)"
 - Results show "(Fake)" or "(Simulated)" labels
 
 #### Available User Statuses

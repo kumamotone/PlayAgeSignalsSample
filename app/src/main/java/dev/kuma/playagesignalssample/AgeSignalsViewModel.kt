@@ -7,6 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.play.agesignals.AgeSignalsManager
 import com.google.android.play.agesignals.AgeSignalsManagerFactory
 import com.google.android.play.agesignals.AgeSignalsRequest
+import com.google.android.play.agesignals.AgeSignalsResult
+import com.google.android.play.agesignals.AgeSignalsException
+import com.google.android.play.agesignals.testing.FakeAgeSignalsManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,7 +32,7 @@ sealed class AgeSignalsUiState {
 }
 
 /**
- * User status constants from AgeSignalsVerificationStatus
+ * User status constants matching AgeSignalsVerificationStatus values
  * Based on: https://developer.android.com/google/play/age-signals/use-age-signals-api
  */
 object UserStatus {
@@ -54,7 +57,7 @@ object UserStatus {
 }
 
 /**
- * Error codes that can be simulated
+ * Error codes matching AgeSignalsErrorCode values
  * Based on: https://developer.android.com/google/play/age-signals/test-age-signals-api
  */
 object SimulatedError {
@@ -80,19 +83,6 @@ object SimulatedError {
     
     fun toDisplayName(code: Int): String {
         return allErrors.find { it.first == code }?.second ?: "Unknown ($code)"
-    }
-    
-    fun toErrorMessage(code: Int): String {
-        return when (code) {
-            API_NOT_AVAILABLE -> "Age signals feature is not available"
-            NETWORK_ERROR -> "Network error occurred"
-            TOO_MANY_REQUESTS -> "Too many requests. Please try again later"
-            PLAY_SERVICES_VERSION_OUTDATED -> "Google Play Services needs to be updated"
-            CLIENT_TRANSIENT_ERROR -> "Temporary client error. Please retry"
-            APP_NOT_OWNED -> "App was not installed from Google Play"
-            INTERNAL_ERROR -> "An internal error occurred"
-            else -> "Unknown error"
-        }
     }
 }
 
@@ -158,12 +148,17 @@ class AgeSignalsViewModel(
             
             try {
                 if (config.enabled) {
-                    // Use fake response for testing
-                    checkWithFakeResponse(config)
+                    // Use FakeAgeSignalsManager for testing
+                    checkWithFakeManager(config)
                 } else {
                     // Use real AgeSignalsManager
                     checkWithRealManager()
                 }
+            } catch (e: AgeSignalsException) {
+                _uiState.value = AgeSignalsUiState.Error(
+                    message = e.message ?: "Age Signals error occurred",
+                    errorCode = e.errorCode
+                )
             } catch (e: Exception) {
                 _uiState.value = AgeSignalsUiState.Error(
                     message = e.message ?: "Unknown error occurred"
@@ -184,25 +179,32 @@ class AgeSignalsViewModel(
     }
     
     /**
-     * Simulate the API response without actually calling the real manager.
-     * This mimics what FakeAgeSignalsManager does internally.
+     * Use FakeAgeSignalsManager to simulate API responses.
+     * Based on: https://developer.android.com/google/play/age-signals/test-age-signals-api
      */
-    private fun checkWithFakeResponse(config: FakeConfig) {
-        // Simulate a small delay to make it feel more realistic
+    private suspend fun checkWithFakeManager(config: FakeConfig) {
+        val fakeManager = FakeAgeSignalsManager()
+        
         if (config.simulatedError != SimulatedError.NONE) {
-            // Simulate an error
-            _uiState.value = AgeSignalsUiState.Error(
-                message = SimulatedError.toErrorMessage(config.simulatedError),
-                errorCode = config.simulatedError
-            )
+            // Set up fake error using the error code integer value directly
+            fakeManager.setNextAgeSignalsException(AgeSignalsException(config.simulatedError))
         } else {
-            // Simulate success
-            _uiState.value = AgeSignalsUiState.Success(
-                installId = config.installId,
-                userStatus = config.userStatus,
-                userStatusText = UserStatus.toDisplayName(config.userStatus)
-            )
+            // Set up fake success result using user status integer value directly
+            val fakeResult = AgeSignalsResult.builder()
+                .setUserStatus(config.userStatus)
+                .setInstallId(config.installId)
+                .build()
+            fakeManager.setNextAgeSignalsResult(fakeResult)
         }
+        
+        val request = AgeSignalsRequest.builder().build()
+        val result = fakeManager.checkAgeSignals(request).await()
+        val status = result.userStatus() ?: UserStatus.UNKNOWN
+        _uiState.value = AgeSignalsUiState.Success(
+            installId = result.installId() ?: "",
+            userStatus = status,
+            userStatusText = UserStatus.toDisplayName(status)
+        )
     }
 
     /**
