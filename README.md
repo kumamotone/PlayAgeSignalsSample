@@ -2,6 +2,10 @@
 
 A sample Android application demonstrating the [Play Age Signals API](https://developer.android.com/google/play/age-signals/use-age-signals-api).
 
+## Screenshot
+
+<img src="screenshot.png" width="300" alt="Play Age Signals Sample App Screenshot" />
+
 ## Overview
 
 The Play Age Signals API provides information about the user's age verification status. This helps apps provide age-appropriate content and experiences based on user verification status.
